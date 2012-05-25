@@ -12,6 +12,40 @@ module Url2yml
     end
   end
 
+  def self.s3_url2yml url
+    parser = S3UrlParser.new
+    if parser.parse url
+      "access_key_id: #{parser.h_data[:access_key_id]}\n" +
+      "secret_access_key: #{parser.h_data[:secret_access_key]}\n" 
+    else
+      "INVALID S3 URL: #{url}"
+    end
+  end
+
+  class S3UrlParser
+    attr_accessor :h_data
+
+    # s3://access_key_id:secret_access_key
+    def parse url
+       begin
+        @h_data = {}
+        match_data = /s3:\/\/(?<access_key_id>[[:alnum:]]+):(?<secret_access_key>[[:alnum:]]+)/.match(url)
+
+        @h_data[:access_key_id] = match_data[:access_key_id]
+        @h_data[:secret_access_key] = match_data[:secret_access_key]
+        true
+       rescue
+          msg = "ERROR PARSING S3 URL #{url}: #{$!}"
+          if defined?( Rails )
+            Rails.logger.error msg
+          else
+            puts msg
+          end
+         false
+       end
+    end
+  end
+
   class DbUrlParser
     attr_accessor :h_data
     

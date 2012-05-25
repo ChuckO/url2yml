@@ -5,7 +5,7 @@ require 'url2yml'
  
 describe Url2yml do
  
-  describe "when url2yml parses a good url" do
+  describe "when DB url2yml parses a good url" do
     it "should friggin work" do
       url = "postgresql://dev:blah@192.168.1.5:1000/authentication_db_development"
       parser = Url2yml::DbUrlParser.new 
@@ -23,12 +23,22 @@ describe Url2yml do
     end
   end
  
-  describe "when url2yml parses a bad url" do
-    it "should raise" do
+  describe "when DB url2yml parses a bad url" do
+    it "should raise hell" do
       url = "XXX=postgresql://dev:dev@192.168.1.5/authentication_db_development"
       parser = Url2yml::DbUrlParser.new 
       assert !parser.parse( url )
     end
   end
-end
 
+  describe "when S3 url2yml parses a good url" do
+    it "should raise" do
+      url = "s3://123456:abcdef"
+      parser = Url2yml::S3UrlParser.new 
+      assert parser.parse( url )
+      assert parser.h_data[:access_key_id]
+      assert parser.h_data[:secret_access_key]
+      puts Url2yml.s3_url2yml "s3://123456:abcdef"
+    end
+  end
+end
