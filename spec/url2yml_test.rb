@@ -49,12 +49,12 @@ describe Url2yml do
       parser = Url2yml::CassandraUrlParser.new 
       assert parser.parse( url )
       assert parser.h_data[:host]
-      assert parser.h_data[:keystore]
+      assert parser.h_data[:keyspace]
 
       # ap parser.h_data
 
-      puts Url2yml.cassandra_url2yml "cassandra://myhost/akeystore_development", 'development'
-      puts Url2yml.cassandra_url2yml "cassandra://myhost/akeystore", 'test'
+      puts Url2yml.cassandra_url2yml "cassandra://myhost/akeyspace_development", 'development'
+      puts Url2yml.cassandra_url2yml "cassandra://myhost/akeyspace", 'test'
     end
   end
 end

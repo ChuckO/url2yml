@@ -58,7 +58,7 @@ module Url2yml
   class CassandraUrlParser
     attr_accessor :h_data
 
-    # cassandra://hostname:port/keystore
+    # cassandra://hostname:port/keyspace
     # TODO: add usr/pwd
     def parse url
        begin
@@ -68,15 +68,15 @@ module Url2yml
         raise "invalid scheme" unless scheme == 'cassandra'
         raise "invalid url" if remaining_url.strip.nil? || remaining_url.strip == ''
 
-        host_port, keystore = remaining_url.split( '/' )
-        raise "no keystore" if keystore.nil? || keystore.strip == ''
+        host_port, keyspace = remaining_url.split( '/' )
+        raise "no keyspace" if keyspace.nil? || keyspace.strip == ''
 
         host, port = host_port.split( ':' )
 
         port = 9160 if port.nil? || post.strip == ''
         @h_data[:host] = host
         @h_data[:port] = port
-        @h_data[:keystore] = keystore
+        @h_data[:keyspace] = keyspace
 
         true
        rescue
@@ -97,13 +97,13 @@ module Url2yml
       # db other than test, ALSO allow a development url to have '_development' replaced with
       # '_test' so you don't have to explicitly change URLs when running 'rake spec' etc
       if rails_env == "test"
-        keystore = h_data[:keystore]
-        h_data[:keystore] = keystore.gsub( /_development$/, '' ) if keystore =~ /_development$/
-        h_data[:keystore] = h_data[:keystore] + '_test' unless h_data[:keystore]=~ /_test$/
+        keyspace = h_data[:keyspace]
+        h_data[:keyspace] = keyspace.gsub( /_development$/, '' ) if keyspace =~ /_development$/
+        h_data[:keyspace] = h_data[:keyspace] + '_test' unless h_data[:keyspace]=~ /_test$/
       end
       
       yml = "#{rails_env}:\n"
-      [:host, :port, :keystore].each do |attr|
+      [:host, :port, :keyspace].each do |attr|
         v = h_data[attr]
         yml += " #{attr.to_s}: #{v}\n" if v 
       end
