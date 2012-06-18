@@ -68,7 +68,6 @@ module Url2yml
         raise "invalid scheme" unless scheme == 'cassandra'
         raise "invalid url" if remaining_url.strip.nil? || remaining_url.strip == ''
 
-        puts "REMAINING: #{remaining_url}"
         host_port, keystore = remaining_url.split( '/' )
         raise "no keystore" if keystore.nil? || keystore.strip == ''
 
