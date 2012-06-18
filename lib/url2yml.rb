@@ -99,13 +99,8 @@ module Url2yml
       # '_test' so you don't have to explicitly change URLs when running 'rake spec' etc
       if rails_env == "test"
         keystore = h_data[:keystore]
-        if keystore =~ /_development$/
-          h_data[:keystore] = database.gsub( /_development$/, '' ) 
-        end
-
-        unless h_data[:keystore]=~ /_test$/
-          h_data[:keystore] = h_data[:keystore] + '_test'
-        end
+        h_data[:keystore] = keystore.gsub( /_development$/, '' ) if keystore =~ /_development$/
+        h_data[:keystore] = h_data[:keystore] + '_test' unless h_data[:keystore]=~ /_test$/
       end
       
       yml = "#{rails_env}:\n"
