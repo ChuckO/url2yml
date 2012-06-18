@@ -3,6 +3,15 @@ require 'uri'
 require 'cgi'
 
 module Url2yml
+  def self.cassandra_url2yml url, environment
+    parser = CassandraUrlParser.new
+    if parser.parse url
+      parser.to_yml environment 
+    else
+      "INVALID CASSANDRA URL: #{url}"
+    end
+  end
+
   def self.db_url2yml url, environment
     parser = DbUrlParser.new
     if parser.parse url
@@ -43,6 +52,68 @@ module Url2yml
           end
          false
        end
+    end
+  end
+
+  class CassandraUrlParser
+    attr_accessor :h_data
+
+    # cassandra://hostname:port/keystore
+    # TODO: add usr/pwd
+    def parse url
+       begin
+        @h_data = {}
+
+        scheme, remaining_url = url.split( '://' )
+        raise "invalid scheme" unless scheme == 'cassandra'
+        raise "invalid url" if remaining_url.strip.nil? || remaining_url.strip == ''
+
+        puts "REMAINING: #{remaining_url}"
+        host_port, keystore = remaining_url.split( '/' )
+        raise "no keystore" if keystore.nil? || keystore.strip == ''
+
+        host, port = host_port.split( ':' )
+
+        port = 9160 if port.nil? || post.strip == ''
+        @h_data[:host] = host
+        @h_data[:port] = port
+        @h_data[:keystore] = keystore
+
+        true
+       rescue
+          msg = "ERROR PARSING CASSANDRA URL #{url}: #{$!}"
+          if defined?( Rails )
+            Rails.logger.error msg
+          else
+            puts msg
+          end
+         false
+       end
+    end
+
+    def to_yml rails_env
+      rails_env = (ENV["RAILS_ENV"] || ENV["RACK_ENV"]) if rails_env.nil? || rails_env.strip == ''
+
+      # Very important to always ensure test env has test suffix so we never blow away a
+      # db other than test, ALSO allow a development url to have '_development' replaced with
+      # '_test' so you don't have to explicitly change URLs when running 'rake spec' etc
+      if rails_env == "test"
+        keystore = h_data[:keystore]
+        if keystore =~ /_development$/
+          h_data[:keystore] = database.gsub( /_development$/, '' ) 
+        end
+
+        unless h_data[:keystore]=~ /_test$/
+          h_data[:keystore] = h_data[:keystore] + '_test'
+        end
+      end
+      
+      yml = "#{rails_env}:\n"
+      [:host, :port, :keystore].each do |attr|
+        v = h_data[attr]
+        yml += " #{attr.to_s}: #{v}\n" if v 
+      end
+      yml
     end
   end
 
