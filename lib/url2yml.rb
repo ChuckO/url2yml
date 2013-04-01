@@ -172,6 +172,7 @@ module Url2yml
       if h_data[:params]
         h_data[:params].keys.each do |attr|
           v = h_data[:params][attr]
+          v = v[0] if v && v.is_a?(Array) && v.size == 1
           yml += " #{attr.to_s}: #{v}\n" if v 
         end
       end
